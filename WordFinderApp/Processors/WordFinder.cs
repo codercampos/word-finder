@@ -1,63 +1,16 @@
-﻿namespace WordFinderApp;
+﻿namespace WordFinderApp.Processors;
 
-/// <summary>
-/// A class that finds words in a matrix of characters.
-/// </summary>
-public class WordFinder
+public class WordFinder(IEnumerable<string> matrix) : BaseWordFinder(matrix)
 {
-    /// <summary>
-    /// Defines the maximum size of the matrix.
-    /// </summary>
-    private const int MaxSize = 64;
-    
-    /// <summary>
-    /// A 2D array that stores the matrix of characters.
-    /// </summary>
-    private readonly char[,] _matrix;
-    
-    public WordFinder(IEnumerable<string> matrix)
+    public override IEnumerable<string> Find(IEnumerable<string> wordStream)
     {
-        // Let's avoid potential issues with multiple enumerations
-        var matrixInput = matrix
-            .Select(x => x.ToLower())
-            .ToList();
-        var size = matrixInput.Count;
-        
-        if (size > MaxSize || matrixInput.Any(row => row.Length != size || row.Length > MaxSize))
-        {
-            throw new ArgumentException($"the matrix should not exceed {MaxSize}x{MaxSize} size.");
-        }
-        
-        if (matrixInput.Any(row => row.Length != size)) {
-            throw new ArgumentException("All rows in the matrix must have the same length as the number of rows to form a square matrix.");
-        }
-        
-        // Create the matrix with the size We need.
-        _matrix = new char[size, size];
-        var row = 0;
-
-        // Feel the matrix with the input values.
-        foreach (var line in matrixInput)
-        {
-           for (var col = 0; col < line.Length; col++)
-           {
-               _matrix[row, col] = line[col];
-           }
-
-           row++;
-        }
-    }
-    
-    /// <summary>
-    /// Processes the word stream and returns the top 10 most found words in the matrix.
-    /// </summary>
-    /// <returns>The top 10 most repeated words.</returns>
-    public IEnumerable<string> Find(IEnumerable<string> wordStream)
-    {
+        var initialTime = DateTime.Now;
+        Console.WriteLine("==============================");
         Console.WriteLine("Looking for the words in the matrix...");
-        Console.WriteLine($"Started at: {DateTime.Now:O}");
+        Console.WriteLine("==============================");
+        Console.WriteLine($"Started at: {initialTime:O}");
+        
         var foundWords = new Dictionary<string, int>();
-
         foreach (var word in wordStream.Distinct())
         {
             // Make sure that the word we are looking is in lowercase.
@@ -68,12 +21,15 @@ public class WordFinder
             }
         }
 
-        Console.WriteLine($"Started at: {DateTime.Now:O}");
+        var endTime = DateTime.Now;
+        Console.WriteLine($"Finished at: {endTime:O}");
+        Console.WriteLine($"Total time: {(endTime - initialTime).TotalMicroseconds} ms");
+        Console.WriteLine("==============================");
         return foundWords.OrderByDescending(kvp => kvp.Value)
             .Take(10)
             .Select(kvp => kvp.Key);
     }
-
+    
     /// <summary>
     /// This helper sums the occurrences of a word found horizontally and vertically.
     /// </summary>
@@ -90,7 +46,7 @@ public class WordFinder
     private int FindWordInDirection(string word, bool isHorizontal)
     {
         var count = 0;
-        var n = _matrix.GetLength(0);
+        var n = Matrix.GetLength(0);
         var m = word.Length;
 
         if (isHorizontal)
@@ -131,20 +87,20 @@ public class WordFinder
         if (isHorizontal)
         {
             // Ensure we do not go out of horizontal bounds
-            if (col + word.Length > _matrix.GetLength(1)) return false;
+            if (col + word.Length > Matrix.GetLength(1)) return false;
             for (var i = 0; i < word.Length; i++)
             {
-                if (_matrix[row, col + i] != word[i])
+                if (Matrix[row, col + i] != word[i])
                     return false;
             }
         }
         else
         {
             // Ensure we do not go out of vertical bounds
-            if (row + word.Length > _matrix.GetLength(0)) return false;
+            if (row + word.Length > Matrix.GetLength(0)) return false;
             for (var i = 0; i < word.Length; i++)
             {
-                if (_matrix[row + i, col] != word[i])
+                if (Matrix[row + i, col] != word[i])
                     return false;
             }
         }
