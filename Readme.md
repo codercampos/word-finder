@@ -42,3 +42,6 @@ In this case:
 - C# 12.0
 - Matrix size: 32x32
 - Word stream: 'hello', 'world', 'test', 'alpha'
+
+## Test Results
+![Alt text of the image](https://github.com/codercampos/word-finder/blob/main/img/sample001.png)
